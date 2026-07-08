@@ -17,40 +17,87 @@
           <span id="interface-count" class="status-pill">Interfaces</span>
         </header>
 
-        <form id="wake-form" class="wake-form">
+        <div class="controls">
           <label class="field">
-            <span>MAC address</span>
-            <input
-              id="mac"
-              name="mac"
-              autocomplete="off"
-              spellcheck="false"
-              inputmode="text"
-              placeholder="AA:BB:CC:DD:EE:FF"
-              required>
+            <span>Network interface</span>
+            <select id="interface" name="interface"></select>
           </label>
 
-          <div class="form-grid">
-            <label class="field">
-              <span>Network interface</span>
-              <select id="interface" name="interface"></select>
-            </label>
+          <label class="field port-field">
+            <span>UDP port</span>
+            <input id="port" name="port" type="number" min="1" max="65535" value="9">
+          </label>
 
-            <label class="field port-field">
-              <span>UDP port</span>
-              <input id="port" name="port" type="number" min="1" max="65535" value="9">
-            </label>
-          </div>
-
-          <div id="interface-detail" class="interface-detail" aria-live="polite"></div>
-
-          <div class="actions">
+          <div class="control-actions">
             <button id="refresh" type="button" class="secondary">Refresh</button>
-            <button id="wake" type="submit" class="primary">Wake On LAN</button>
+            <button id="scan" type="button" class="primary">Scan network</button>
+          </div>
+        </div>
+
+        <div id="interface-detail" class="interface-detail" aria-live="polite"></div>
+
+        <section class="devices" aria-labelledby="devices-title">
+          <div class="devices-header">
+            <h2 id="devices-title">Devices</h2>
+            <span id="scan-summary" class="muted"></span>
+          </div>
+          <p id="scan-status" class="status" role="status" aria-live="polite"></p>
+          <div
+            id="device-list"
+            class="device-list"
+            role="radiogroup"
+            aria-label="Discovered and saved devices"></div>
+        </section>
+
+        <section id="selected" class="selected" aria-live="polite" hidden>
+          <div class="selected-head">
+            <div>
+              <p class="eyebrow">Selected device</p>
+              <h2 id="selected-name">&nbsp;</h2>
+            </div>
+            <span id="selected-badge" class="badge"></span>
           </div>
 
-          <div id="status" class="status" role="status" aria-live="polite"></div>
-        </form>
+          <dl id="selected-detail" class="kv"></dl>
+
+          <div id="mac-missing" class="mac-missing" hidden>
+            <label class="field">
+              <span>MAC unavailable — enter it once to save this device</span>
+              <input
+                id="mac-input"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="AA:BB:CC:DD:EE:FF">
+            </label>
+          </div>
+
+          <div class="selected-actions">
+            <label class="field label-field">
+              <span>Label (optional)</span>
+              <input id="label-input" autocomplete="off" placeholder="e.g. Office desktop">
+            </label>
+            <button id="wake-selected" type="button" class="primary">Wake</button>
+          </div>
+        </section>
+
+        <details class="advanced">
+          <summary>Advanced: wake a specific MAC</summary>
+          <form id="manual-form" class="manual-form">
+            <label class="field">
+              <span>MAC address</span>
+              <input
+                id="manual-mac"
+                name="mac"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="AA:BB:CC:DD:EE:FF"
+                required>
+            </label>
+            <button type="submit" class="secondary">Send magic packet</button>
+          </form>
+        </details>
+
+        <p id="status" class="status" role="status" aria-live="polite"></p>
       </section>
     </main>
 

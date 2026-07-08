@@ -13,7 +13,7 @@ import (
 
 const (
 	DefaultPort     = 9
-	MagicPacketLen = 102
+	MagicPacketLen  = 102
 	autoInterfaceID = "auto"
 )
 

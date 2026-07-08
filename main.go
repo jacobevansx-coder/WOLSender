@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"flag"
@@ -24,6 +25,10 @@ type wakeRequest struct {
 	MAC         string `json:"mac"`
 	InterfaceID string `json:"interfaceId"`
 	Port        int    `json:"port"`
+}
+
+type scanRequest struct {
+	InterfaceID string `json:"interfaceId"`
 }
 
 type errorResponse struct {
@@ -74,6 +79,7 @@ func newMux() (*http.ServeMux, error) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/interfaces", handleInterfaces)
+	mux.HandleFunc("/api/scan", handleScan)
 	mux.HandleFunc("/api/wake", handleWake)
 	mux.Handle("/", http.FileServer(http.FS(ui)))
 	return mux, nil
@@ -92,6 +98,35 @@ func handleInterfaces(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"interfaces": interfaces})
+}
+
+func handleScan(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, errorResponse{Error: "method not allowed"})
+		return
+	}
+
+	defer r.Body.Close()
+
+	var request scanRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&request); err != nil {
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
+		return
+	}
+
+	// Hard ceiling so one scan cannot hang the server regardless of subnet size.
+	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	defer cancel()
+
+	result, err := wol.Scan(ctx, request.InterfaceID, wol.ScanOptions{})
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
 }
 
 func handleWake(w http.ResponseWriter, r *http.Request) {
